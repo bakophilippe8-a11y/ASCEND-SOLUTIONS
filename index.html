@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Boutique en ligne - Template</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter, system-ui, Arial, sans-serif;line-height:1.4;background:#f5f7fb;color:#0f172a}
+    .container{max-width:1100px;margin:28px auto;padding:0 16px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#06b6d4);display:flex;align-items:center;justify-content:center;color:white;font-weight:700}
+    .search{flex:1;margin:0 16px;display:flex}
+    .search input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid #dbe6f0}
+    .cart-btn{position:relative}
+    .cart-count{position:absolute;top:-8px;right:-8px;background:#ef4444;color:white;border-radius:999px;padding:2px 7px;font-size:12px}
+    .controls{display:flex;gap:12px;align-items:center;margin:12px 0}
+    .products{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+    .card{background:white;border-radius:12px;padding:12px;box-shadow:0 6px 18px rgba(14,20,30,0.06);display:flex;flex-direction:column;gap:10px}
+    .media{height:160px;border-radius:8px;background:#eef2ff;display:flex;align-items:center;justify-content:center}
+    .title{font-weight:700}
+    .price{color:#059669;font-weight:700}
+    .btn{padding:8px 10px;border-radius:10px;border:0;background:#111827;color:white;cursor:pointer}
+    .btn.small{padding:6px 8px;font-size:14px}
+    .cart-modal{position:fixed;right:18px;top:70px;width:320px;background:white;border-radius:12px;box-shadow:0 18px 50px rgba(2,6,23,0.25);overflow:hidden;display:none;z-index:60}
+    .cart-modal.open{display:block}
+    .cart-header{padding:12px;border-bottom:1px solid #eef2ff;display:flex;align-items:center;justify-content:space-between}
+    .cart-body{max-height:420px;overflow:auto;padding:12px}
+    .cart-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px dashed #f1f5f9}
+    .cart-item img{width:56px;height:56px;border-radius:8px;object-fit:cover}
+    .cart-footer{padding:12px;border-top:1px solid #eef2ff}
+    @media (max-width:720px){
+      header{flex-direction:column;align-items:stretch;gap:10px}
+      .search{margin:0}
+      .cart-modal{left:6px;right:6px;top:auto;bottom:12px;width:auto}
+    }
+    .muted{color:#64748b;font-size:13px}
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="brand">
+      <div class="logo">BE</div>
+      <div>
+        <div style="font-weight:800">Boutique En Ligne</div>
+        <div class="muted">Template rapide — personnalisé pour toi</div>
+      </div>
+    </div>
+    <div class="search">
+      <input id="searchInput" placeholder="Rechercher un produit..." />
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn" id="clearStore">Réinitialiser données</button>
+      <button class="btn cart-btn" id="toggleCart">Panier <span class="cart-count" id="cartCount">0</span></button>
+    </div>
+  </header>
+
+  <div class="controls">
+    <select id="sortSelect">
+      <option value="default">Trier: par défaut</option>
+      <option value="price-asc">Prix: bas → haut</option>
+      <option value="price-desc">Prix: haut → bas</option>
+      <option value="alpha">Nom: A → Z</option>
+    </select>
+    <label class="muted">Filtres rapides:</label>
+    <button class="btn small" id="filterPromo">En promo</button>
+    <button class="btn small" id="filterAll">Voir tout</button>
+  </div>
+
+  <section class="products" id="products"></section>
+</div>
+
+<div class="cart-modal" id="cartModal">
+  <div class="cart-header">
+    <div style="font-weight:800">Panier</div>
+    <div><button class="btn small" id="closeCart">Fermer</button></div>
+  </div>
+  <div class="cart-body" id="cartBody"></div>
+  <div class="cart-footer">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div class="muted">Total</div>
+      <div style="font-weight:800" id="cartTotal">0 XOF</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" id="checkoutBtn">Commander</button>
+      <button class="btn" id="emptyCart">Vider</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // --- Produits ---
+  const products = [
+    {id:1, title:"Chaussures de sport", price:25000, promo:true, image:"https://via.placeholder.com/160?text=Chaussures"},
+    {id:2, title:"Sac à main élégant", price:40000, promo:false, image:"https://via.placeholder.com/160?text=Sac"},
+    {id:3, title:"Smartphone X200", price:150000, promo:true, image:"https://via.placeholder.com/160?text=Smartphone"},
+    {id:4, title:"Casque audio", price:30000, promo:false, image:"https://via.placeholder.com/160?text=Casque"},
+    {id:5, title:"Réfrigérateur 2 portes", price:250000, promo:true, image:"https://via.placeholder.com/160?text=Frigo"},
+    {id:6, title:"Mixeur de cuisine", price:18000, promo:false, image:"https://via.placeholder.com/160?text=Mixeur"},
+    {id:7, title:"Machine à laver", price:200000, promo:false, image:"https://via.placeholder.com/160?text=Lave-linge"},
+    {id:8, title:"Four micro-ondes", price:60000, promo:true, image:"https://via.placeholder.com/160?text=Micro-ondes"},
+    {id:9, title:"Télévision 4K", price:180000, promo:true, image:"https://via.placeholder.com/160?text=TV+4K"},
+    {id:10, title:"Robot mixeur", price:50000, promo:false, image:"https://via.placeholder.com/160?text=Robot+mixeur"}
+  ];
+
+  const productsContainer = document.getElementById("products");
+  const cartCount = document.getElementById("cartCount");
+  const cartBody = document.getElementById("cartBody");
+  const cartTotal = document.getElementById("cartTotal");
+  const cartModal = document.getElementById("cartModal");
+  let cart = JSON.parse(localStorage.getItem("boutique_cart")) || [];
+
+  // --- Affichage produits ---
+  function renderProducts(list){
+    productsContainer.innerHTML = "";
+    list.forEach(p=>{
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="media"><img src="${p.image}" alt="${p.title}" style="max-width:100%;max-height:100%;border-radius:8px"/></div>
+        <div class="title">${p.title}</div>
+        <div class="price">${p.price} XOF</div>
+        ${p.promo ? '<div class="muted">En promo</div>' : ''}
+        <button class="btn small" onclick="addToCart(${p.id})">Ajouter au panier</button>
+      `;
+           productsContainer.appendChild(card);
+    });
+  }
+
+  // --- Panier ---
+  function addToCart(id){
+    const product = products.find(p=>p.id===id);
+    cart.push(product);
+    localStorage.setItem("boutique_cart", JSON.stringify(cart));
+    updateCart();
+  }
+
+  function updateCart(){
+    cartCount.textContent = cart.length;
+    cartBody.innerHTML = "";
+    let total = 0;
+    cart.forEach(item=>{
+      total += item.price;
+      const div = document.createElement("div");
+      div.className = "cart-item";
+      div.innerHTML = `
+        <img src="${item.image}" alt="${item.title}" />
+        <div>
+          <div>${item.title}</div>
+          <div class="muted">${item.price} XOF</div>
+        </div>
+      `;
+      cartBody.appendChild(div);
+    });
+    cartTotal.textContent = total + " XOF";
+  }
+
+  // --- Recherche ---
+  document.getElementById("searchInput").oninput = (e)=>{
+    const q = e.target.value.toLowerCase();
+    renderProducts(products.filter(p=>p.title.toLowerCase().includes(q)));
+  };
+
+  // --- Filtres & tri ---
+  document.getElementById("filterPromo").onclick = ()=>renderProducts(products.filter(p=>p.promo));
+  document.getElementById("filterAll").onclick = ()=>renderProducts(products);
+  document.getElementById("sortSelect").onchange = (e)=>{
+    let sorted = [...products];
+    if(e.target.value==="price-asc") sorted.sort((a,b)=>a.price-b.price);
+    if(e.target.value==="price-desc") sorted.sort((a,b)=>b.price-a.price);
+    if(e.target.value==="alpha") sorted.sort((a,b)=>a.title.localeCompare(b.title));
+    renderProducts(sorted);
+  };
+
+  // --- Gestion du panier ---
+  document.getElementById("toggleCart").onclick = ()=>cartModal.classList.toggle("open");
+  document.getElementById("closeCart").onclick = ()=>cartModal.classList.remove("open");
+  document.getElementById("emptyCart").onclick = ()=>{
+    cart = [];
+    localStorage.removeItem("boutique_cart");
+    updateCart();
+  };
+  document.getElementById("clearStore").onclick = ()=>{
+    localStorage.removeItem("boutique_cart");
+    cart = [];
+    updateCart();
+  };
+  document.getElementById("checkoutBtn").onclick = ()=>{
+    alert("Commande validée !");
+  };
+
+  // --- Init ---
+  renderProducts(products);
+  updateCart();
+</script>
+</body>
+</html>
